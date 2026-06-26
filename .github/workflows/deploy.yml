@@ -1,0 +1,43 @@
+name: Deploy PortaDrive to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          script: |
+            cd /home/website/portal-drive/porta-drive
+            
+            echo "==== PULLING LATEST CODE ===="
+            git pull
+            
+            echo "==== INSTALLING DEPENDENCIES ===="
+            export PATH=$PATH:/root/.bun/bin
+            bun install
+            
+            echo "==== COMPILING BINARIES ===="
+            bun build --compile src/index.ts --outfile public/porta-drive-linux-x64
+            bun build --compile --target=bun-linux-arm64 src/index.ts --outfile public/porta-drive-linux-arm64
+            bun build --compile --target=bun-darwin-x64 src/index.ts --outfile public/porta-drive-macos-x64
+            bun build --compile --target=bun-darwin-arm64 src/index.ts --outfile public/porta-drive-macos-arm64
+            
+            echo "==== CHECKING DEV SERVER STATUS ===="
+            if pgrep -f "bun run dev" > /dev/null; then
+              echo "Dev server is running. Watcher will pick up changes."
+            else
+              echo "Dev server is not running! Starting dev server..."
+              nohup bun run dev > dev_server.log 2>&1 &
+              sleep 2
+              cat dev_server.log
+            fi
