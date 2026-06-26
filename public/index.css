@@ -885,8 +885,18 @@ body.auth-page {
 }
 
 .message-content ul, .message-content ol {
-  margin-left: 18px;
+  margin-left: 20px;
   margin-bottom: 6px;
+  padding-left: 0;
+}
+.message-content ul {
+  list-style-type: disc;
+}
+.message-content ol {
+  list-style-type: decimal;
+}
+.message-content li {
+  margin-bottom: 4px;
 }
 
 .message-content code {

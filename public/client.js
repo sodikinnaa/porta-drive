@@ -1123,6 +1123,7 @@ function parseMarkdown(text) {
   
   let html = text;
   
+  // Escape HTML tags to prevent XSS
   html = html
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -1131,27 +1132,43 @@ function parseMarkdown(text) {
   // Images: ![alt](src)
   html = html.replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="chat-generated-image" style="max-width: 100%; border-radius: 8px; margin-top: 8px; border: 1px solid var(--border);" />');
 
-  // Code blocks
+  // Code blocks: ```code```
   html = html.replace(/```([\s\S]*?)```/g, (_, code) => {
     return `<pre><code>${code.trim()}</code></pre>`;
   });
 
-  // Inline code
+  // Inline code: `code`
   html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
 
-  // Headers
+  // Headers: #, ##, ###
   html = html.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
   html = html.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
   html = html.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
 
-  // Bullet Lists
-  html = html.replace(/^\s*-\s+(.*?)$/gm, '<li>$1</li>');
-  html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+  // Bullet Lists (support -, *, and +)
+  html = html.replace(/^\s*[-*+]\s+(.*?)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>[\s\S]*?<\/li>)/g, (match) => {
+    return `<ul>${match}</ul>`;
+  });
+  html = html.replace(/<\/ul>\s*<ul>/g, ''); // Merge consecutive ul blocks
+
+  // Numbered Lists (support 1., 2., etc.)
+  html = html.replace(/^\s*(\d+)\.\s+(.*?)$/gm, '<li value="$1">$2</li>');
+  html = html.replace(/(<li value="\d+">[\s\S]*?<\/li>)/g, (match) => {
+    return `<ol>${match}</ol>`;
+  });
+  html = html.replace(/<\/ol>\s*<ol>/g, ''); // Merge consecutive ol blocks
+
+  // Bold: **text**
+  html = html.replace(/\*\*([\s\S]*?)\*\*/g, '<strong>$1</strong>');
+
+  // Italics: *text*
+  html = html.replace(/\*([\s\S]*?)\*/g, '<em>$1</em>');
 
   // Paragraphs
   const paragraphs = html.split(/\n\n+/);
   html = paragraphs.map(p => {
-    if (p.startsWith('<h') || p.startsWith('<pre') || p.startsWith('<ul') || p.startsWith('<ul>')) {
+    if (p.startsWith('<h') || p.startsWith('<pre') || p.startsWith('<ul') || p.startsWith('<ul>') || p.startsWith('<ol') || p.startsWith('<ol>')) {
       return p;
     }
     return `<p>${p.replace(/\n/g, '<br>')}</p>`;
