@@ -826,6 +826,14 @@
   </footer>
 
   <script>
+    // Update installer command to use current origin on load
+    document.addEventListener('DOMContentLoaded', () => {
+      const cmdText = document.getElementById('cmdText');
+      if (cmdText) {
+        cmdText.textContent = `curl -fsSL ${window.location.origin}/install.sh | bash`;
+      }
+    });
+
     function copyCommand() {
       const text = document.getElementById('cmdText').textContent;
       navigator.clipboard.writeText(text).then(() => {
