@@ -265,7 +265,7 @@ async function main() {
   // Parse arguments
   const args = process.argv.slice(2);
   
-  let targetInput = '1IzDKm2htqgfw_uOeg5k3ihMOgoMnnT2a'; // Default to user's folder
+  let targetInput = '19vEaysmoDM7bQ4-snYpjUgmlqiJZwEB6'; // Default to user's folder
   let recursive = false;
   let exportJson = false;
 

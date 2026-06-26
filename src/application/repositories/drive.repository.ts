@@ -7,6 +7,9 @@ export interface DriveRepository {
     geminiApiKey?: string | null,
     openaiApiKey?: string | null,
     openaiBaseUrl?: string | null,
-    openaiModel?: string | null
+    openaiModel?: string | null,
+    page?: number,
+    pageRange?: string,
+    searchQuery?: string
   ): Promise<string>;
 }

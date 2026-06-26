@@ -92,6 +92,20 @@ export class ChatUseCase {
         throw new Error('OpenAI Compatible configuration is incomplete in settings.');
       }
 
+      // Intercept if the selected model is an image generation model
+      const isImageModel = /image|dalle|dall-e|flux|stable-diffusion|generation/i.test(openaiModel);
+      if (isImageModel) {
+        try {
+          const markdownTag = await this.aiRepository.generateImage(openaiBase, openaiKey, openaiModel, messageText);
+          this.messageRepository.saveMessage(conversationId, 'model', markdownTag, null);
+          return { text: markdownTag, toolCalls: [] };
+        } catch (err: any) {
+          const errorMsg = `Image generation failed. Error: ${err.message}`;
+          this.messageRepository.saveMessage(conversationId, 'model', errorMsg, null);
+          return { text: errorMsg, toolCalls: [] };
+        }
+      }
+
       return this.runOpenAILoop(openaiKey, openaiBase, openaiModel, conversationId, dbMessages, folderId, folderStructure, user.gemini_api_key);
     } else {
       // Gemini API
@@ -159,12 +173,15 @@ export class ChatUseCase {
         },
         {
           name: 'read_file',
-          description: 'Downloads and reads the content of a file (e.g. PDF, Image, Document, text) using its ID from the Drive.',
+          description: 'Downloads and reads the content of a file (e.g. PDF, Image, Document, text). For PDFs, you can optionally search by keyword or extract specific pages to avoid hitting context limits.',
           parameters: {
             type: 'OBJECT',
             properties: {
               fileId: { type: 'STRING', description: 'The unique ID of the file to read.' },
-              fileName: { type: 'STRING', description: 'The name of the file being read (optional).' }
+              fileName: { type: 'STRING', description: 'The name of the file being read (optional).' },
+              page: { type: 'INTEGER', description: 'Specific page number to extract (1-indexed, PDF only).' },
+              pageRange: { type: 'STRING', description: 'Page range to extract, e.g. "5-10" or "20-25" (PDF only).' },
+              searchQuery: { type: 'STRING', description: 'Keyword to search inside the document. Returns matching lines and page numbers.' }
             },
             required: ['fileId']
           }
@@ -238,7 +255,15 @@ Since you can read PDFs and images, do not hesitate to call the "read_file" tool
           const mimeType = fileInfo ? fileInfo.mimeType : 'application/octet-stream';
           
           try {
-            const content = await this.driveRepository.downloadFileContent(fileId, mimeType, apiKey);
+            const content = await this.driveRepository.downloadFileContent(
+              fileId, 
+              mimeType, 
+              apiKey,
+              null, null, null,
+              args.page,
+              args.pageRange,
+              args.searchQuery
+            );
             resultObj = { content };
           } catch (err: any) {
             resultObj = { error: `Could not read file. Error: ${err.message}` };
@@ -349,12 +374,15 @@ Since you can read PDFs and images, do not hesitate to call the "read_file" tool
         type: 'function',
         function: {
           name: 'read_file',
-          description: 'Downloads and reads the content of a file (e.g. PDF, Image, Document, text) using its ID from the Drive.',
+          description: 'Downloads and reads the content of a file (e.g. PDF, Image, Document, text). For PDFs, you can optionally search by keyword or extract specific pages to avoid hitting context limits.',
           parameters: {
             type: 'OBJECT',
             properties: {
               fileId: { type: 'STRING', description: 'The unique ID of the file to read.' },
-              fileName: { type: 'STRING', description: 'The name of the file being read (optional).' }
+              fileName: { type: 'STRING', description: 'The name of the file being read (optional).' },
+              page: { type: 'INTEGER', description: 'Specific page number to extract (1-indexed, PDF only).' },
+              pageRange: { type: 'STRING', description: 'Page range to extract, e.g. "5-10" or "20-25" (PDF only).' },
+              searchQuery: { type: 'STRING', description: 'Keyword to search inside the document. Returns matching lines and page numbers.' }
             },
             required: ['fileId']
           }
@@ -452,7 +480,17 @@ Since you can read PDFs and images, do not hesitate to call the "read_file" tool
           const mimeType = fileInfo ? fileInfo.mimeType : 'application/octet-stream';
           
           try {
-            const content = await this.driveRepository.downloadFileContent(fileId, mimeType, geminiApiKey, apiKey, baseUrl, model);
+            const content = await this.driveRepository.downloadFileContent(
+              fileId, 
+              mimeType, 
+              geminiApiKey, 
+              apiKey, 
+              baseUrl, 
+              model,
+              args.page,
+              args.pageRange,
+              args.searchQuery
+            );
             resultObj = { content };
           } catch (err: any) {
             resultObj = { error: `Could not read file. Error: ${err.message}` };

@@ -29,7 +29,7 @@ This payload is then unescaped and parsed as JSON, exposing the complete metadat
 ## Usage
 
 ### 1. Default Folder Scan (Root only)
-By default, running the program without arguments will scan the Google Drive folder you provided (`1IzDKm2htqgfw_uOeg5k3ihMOgoMnnT2a`):
+By default, running the program without arguments will scan the Google Drive folder you provided (`19vEaysmoDM7bQ4-snYpjUgmlqiJZwEB6`):
 ```bash
 bun run index.ts
 ```
@@ -37,7 +37,7 @@ bun run index.ts
 ### 2. Scan Custom Folder
 You can provide any public Google Drive URL or Folder ID as a command-line argument:
 ```bash
-bun run index.ts "https://drive.google.com/drive/folders/1IzDKm2htqgfw_uOeg5k3ihMOgoMnnT2a"
+bun run index.ts "https://drive.google.com/drive/folders/19vEaysmoDM7bQ4-snYpjUgmlqiJZwEB6?usp=sharing"
 ```
 
 ### 3. Recursive Scan (List all nested files & folders)
@@ -62,3 +62,10 @@ This will save the output to `drive_export_<folderId>.json`.
 - **Hierarchical tree structure** in console print for recursive views.
 - **Direct download URLs** generated automatically for all files.
 - **Polite scraping**: Uses a 600ms safety delay between directory requests in recursive scanning to avoid hitting Google's anti-scraping limits.
+
+## Support the Developer
+
+If you find this project useful and want to support its continued development, you can buy the developer a coffee or donate via Saweria:
+- **Saweria:** [https://saweria.co/sodikinnaa](https://saweria.co/sodikinnaa)
+
+Thank you for your support!

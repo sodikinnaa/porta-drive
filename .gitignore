@@ -4,3 +4,7 @@ portadrive.db-journal
 drive_export_*.json
 *.log
 .DS_Store
+.env
+.env.*
+public/generated/
+scratch/

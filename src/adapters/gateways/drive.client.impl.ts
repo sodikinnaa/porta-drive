@@ -1,4 +1,7 @@
 import type { DriveRepository } from "../../application/repositories/drive.repository";
+// @ts-ignore
+import pdf from "pdf-parse/lib/pdf-parse.js";
+
 
 interface DriveItem {
   id: string;
@@ -130,7 +133,10 @@ export class DriveClientImpl implements DriveRepository {
     geminiApiKey?: string | null, 
     openaiApiKey?: string | null, 
     openaiBaseUrl?: string | null, 
-    openaiModel?: string | null
+    openaiModel?: string | null,
+    page?: number,
+    pageRange?: string,
+    searchQuery?: string
   ): Promise<string> {
     let downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
     let finalMimeType = mimeType;
@@ -174,15 +180,173 @@ export class DriveClientImpl implements DriveRepository {
 
     if (finalMimeType === 'application/pdf') {
       try {
-        console.log(`[DriveClient] PDF detected. Attempting local pdftotext extraction...`);
-        const tempPath = `/tmp/temp_parse_${fileId}_${Date.now()}.pdf`;
+        console.log(`[DriveClient] PDF detected. Attempting local JS pdf-parse extraction...`);
+        
+        const pageTexts: string[] = [];
+        const options = {
+          pagerender: async function(pageData: any) {
+            const textContent = await pageData.getTextContent({ normalizeWhitespace: true });
+            let lastY, text = '';
+            for (let item of textContent.items) {
+              if (lastY === item.transform[5] || !lastY) {
+                text += item.str;
+              } else {
+                text += '\n' + item.str;
+              }
+              lastY = item.transform[5];
+            }
+            pageTexts[pageData.pageIndex] = text;
+            return text;
+          }
+        };
+
+        const parsed = await pdf(Buffer.from(buffer), options);
+        const numPages = parsed.numpages;
+        const totalTextLength = parsed.text?.length || 0;
+        const avgCharsPerPage = numPages > 0 ? totalTextLength / numPages : 0;
+        const isScanned = avgCharsPerPage < 120; // Classified as scanned if average page text length is < 120 chars
+
+        if (searchQuery) {
+          if (isScanned) {
+            return `[WARNING: Scanned PDF Detected] This PDF document appears to contain scanned images of pages and does not have a selectable text layer (average text per page is only ${Math.round(avgCharsPerPage)} characters, mostly watermarks like "lampungtimurkab.bps.go.id"). Because of this, text search for "${searchQuery}" returned 0 matches. Please call "read_file" with a specific "page" number (e.g. page 25) to transcribe and read that page. AI OCR will be performed.`;
+          }
+          console.log(`[DriveClient] Searching for "${searchQuery}" in PDF (${numPages} pages)...`);
+          const matches: string[] = [];
+          const queryLower = searchQuery.toLowerCase();
+          
+          for (let pIdx = 0; pIdx < numPages; pIdx++) {
+            const pageText = pageTexts[pIdx] || '';
+            if (pageText.toLowerCase().includes(queryLower)) {
+              const lines = pageText.split('\n');
+              for (const line of lines) {
+                if (line.toLowerCase().includes(queryLower)) {
+                  matches.push(`Page ${pIdx + 1}: ${line.trim()}`);
+                  if (matches.length >= 40) break;
+                }
+              }
+            }
+            if (matches.length >= 40) break;
+          }
+          
+          if (matches.length === 0) {
+            return `Search query "${searchQuery}" was not found in the PDF document (${numPages} pages scanned).`;
+          }
+          return `Search results for "${searchQuery}" (found ${matches.length} matches):\n\n` + matches.join('\n');
+        }
+
+        if (page) {
+          const pIdx = page - 1;
+          if (pIdx >= 0 && pIdx < numPages) {
+            console.log(`[DriveClient] Extracting PDF page ${page}...`);
+            const pageRawText = pageTexts[pIdx] || '';
+            
+            // If the page contains very little text (e.g., under 100 non-url characters), run AI OCR
+            const cleanPageText = pageRawText.replace(/https?:\/\/[\w\.\/\-]+/g, '').trim();
+            if (cleanPageText.length < 50) {
+              console.log(`[DriveClient] Page ${page} appears scanned (only ${cleanPageText.length} non-url characters). Running AI OCR...`);
+              try {
+                const singlePageBuffer = await extractPdfPage(buffer, page);
+                const singlePageB64 = singlePageBuffer.toString('base64');
+                const ocrPrompt = `Perform OCR on this PDF page. Transcribe all text, numbers, and tabular data/tables visible on this page in markdown table format. Do not skip any numbers. Page text should be detailed.`;
+
+                if (geminiApiKey) {
+                  console.log(`[DriveClient Gemini OCR] Transcribing scanned page ${page}...`);
+                  const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
+                  const geminiRes = await fetch(geminiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      contents: [{
+                        parts: [
+                          { text: ocrPrompt },
+                          { inlineData: { mimeType: 'application/pdf', data: singlePageB64 } }
+                        ]
+                      }]
+                    })
+                  });
+
+                  if (geminiRes.ok) {
+                    const geminiData = await geminiRes.json();
+                    return `Page ${page} of ${numPages} (AI OCR Transcribed):\n\n` + (geminiData.candidates?.[0]?.content?.parts?.[0]?.text || 'No description returned from Gemini.');
+                  }
+                }
+                
+                if (openaiApiKey && openaiBaseUrl && openaiModel) {
+                  console.log(`[DriveClient OpenAI OCR] Transcribing scanned page ${page}...`);
+                  const openAIUrl = `${openaiBaseUrl.replace(/\/$/, '')}/chat/completions`;
+                  const openAIRes = await fetch(openAIUrl, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${openaiApiKey}`
+                    },
+                    body: JSON.stringify({
+                      model: openaiModel,
+                      messages: [{
+                        role: 'user',
+                        content: [
+                          { type: 'text', text: ocrPrompt },
+                          { type: 'image_url', image_url: { url: `data:application/pdf;base64,${singlePageB64}` } }
+                        ]
+                      }]
+                    })
+                  });
+
+                  if (openAIRes.ok) {
+                    const openAIData = await openAIRes.json();
+                    return `Page ${page} of ${numPages} (AI OCR Transcribed via OpenAI-Compatible):\n\n` + (openAIData.choices?.[0]?.message?.content || '');
+                  }
+                }
+
+                return `Page ${page} of ${numPages} content (Warning: Scanned page detected, but no AI keys are configured to run OCR transcription):\n\n${pageRawText}`;
+              } catch (pdfLibErr: any) {
+                console.error("Failed to split PDF page with pdf-lib:", pdfLibErr.message);
+              }
+            }
+
+            return `Page ${page} of ${numPages} content:\n\n${pageRawText || '[Empty Page]'}`;
+          }
+          return `Error: Page ${page} is out of range. The document has ${numPages} pages.`;
+        }
+
+        if (pageRange) {
+          console.log(`[DriveClient] Extracting PDF page range ${pageRange}...`);
+          const match = pageRange.match(/^(\d+)-(\d+)$/);
+          if (match) {
+            const start = Math.max(1, parseInt(match[1]));
+            const end = Math.min(numPages, parseInt(match[2]));
+            let combinedText = `Page range ${start}-${end} of ${numPages} content:\n\n`;
+            for (let p = start; p <= end; p++) {
+              combinedText += `--- Page ${p} ---\n${pageTexts[p - 1] || ''}\n\n`;
+            }
+            return combinedText.length > 80000 ? combinedText.substring(0, 80000) + "\n\n[Content truncated due to size limits...]" : combinedText;
+          }
+          return `Error: Invalid page range format. Use "start-end" e.g. "5-10".`;
+        }
+
+        const text = parsed.text;
+        if (text && text.trim().length > 0) {
+          console.log(`[DriveClient] Local JS pdf-parse extraction succeeded (${text.length} chars).`);
+          return text.length > 50000 ? text.substring(0, 50000) + "\n\n[Content truncated due to size limits...]" : text;
+        }
+        console.log(`[DriveClient] Local JS pdf-parse returned empty content.`);
+      } catch (jsPdfErr: any) {
+        console.error(`[DriveClient] Local JS pdf-parse failed:`, jsPdfErr.message);
+      }
+
+      try {
+        console.log(`[DriveClient] Attempting local pdftotext extraction...`);
+        const fs = require('fs');
+        const path = require('path');
+        const os = require('os');
+        const tempDir = os.tmpdir();
+        const tempPath = path.join(tempDir, `temp_parse_${fileId}_${Date.now()}.pdf`);
         await Bun.write(tempPath, buffer);
         
         const proc = Bun.spawn(["pdftotext", tempPath, "-"]);
         const text = await new Response(proc.stdout).text();
         
         // Clean up temp file
-        const fs = require('fs');
         try {
           fs.unlinkSync(tempPath);
         } catch (e) {}
@@ -267,4 +431,14 @@ export class DriveClientImpl implements DriveRepository {
       throw new Error('Multimodal file analysis requires a Gemini API Key or an OpenAI Compatible endpoint with vision support.');
     }
   }
+}
+
+async function extractPdfPage(pdfBuffer: ArrayBuffer, pageNumber: number): Promise<Buffer> {
+  const { PDFDocument } = require('pdf-lib');
+  const srcDoc = await PDFDocument.load(pdfBuffer);
+  const newDoc = await PDFDocument.create();
+  const [copiedPage] = await newDoc.copyPages(srcDoc, [pageNumber - 1]);
+  newDoc.addPage(copiedPage);
+  const pdfBytes = await newDoc.save();
+  return Buffer.from(pdfBytes);
 }

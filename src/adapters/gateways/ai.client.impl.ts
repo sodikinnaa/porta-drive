@@ -145,7 +145,21 @@ export class AIClientImpl implements AIRepository {
       const url = imgData.data[0].url;
       
       if (b64) {
-        return `![Generated Image](data:image/png;base64,${b64})`;
+        try {
+          const { mkdirSync, existsSync } = require('fs');
+          const dir = './public/generated';
+          if (!existsSync(dir)) {
+            mkdirSync(dir, { recursive: true });
+          }
+          const filename = `img_${Date.now()}.png`;
+          const filePath = `${dir}/${filename}`;
+          const buffer = Buffer.from(b64, 'base64');
+          await Bun.write(filePath, buffer);
+          return `![Generated Image](/generated/${filename})`;
+        } catch (err) {
+          console.error("Failed to save base64 image to file, falling back to inline base64:", err);
+          return `![Generated Image](data:image/png;base64,${b64})`;
+        }
       } else if (url) {
         return `![Generated Image](${url})`;
       }

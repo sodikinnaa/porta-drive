@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PortaDrive AI - Chatbot UI for Google Drive</title>
+  <link rel="icon" type="image/png" href="/logo.png">
   <!-- Google Fonts: Outfit and Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,8 +23,8 @@
     <!-- Left Sidebar (Chat History / File Explorer) -->
     <aside class="sidebar" id="sidebarPanel">
       <div class="sidebar-header">
-        <div class="logo">
-          <span class="logo-icon">🍀</span>
+        <div class="logo" style="display: flex; align-items: center; gap: 8px;">
+          <img src="/logo.png" alt="PortaDrive Logo" style="height: 32px; width: auto; object-fit: contain;">
           <h2>PortaDrive <span class="accent-text">AI</span></h2>
         </div>
         <p class="sidebar-subtitle">Based on Chatbot UI design pattern</p>
@@ -102,9 +103,18 @@
       
       <!-- Chat Header -->
       <header class="chat-header">
-        <div class="chat-title-info">
-          <h1 id="activeFolderName">Welcome to PortaDrive</h1>
-          <p id="activeFolderStatus">Select or create a conversation to start</p>
+        <div style="display: flex; align-items: center; gap: 12px; overflow: hidden; min-width: 0;">
+          <button id="btnToggleSidebar" class="btn-toggle-sidebar" title="Toggle Sidebar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <div class="chat-title-info">
+            <h1 id="activeFolderName">Welcome to PortaDrive</h1>
+            <p id="activeFolderStatus">Select or create a conversation to start</p>
+          </div>
         </div>
         
         <div class="header-controls">
@@ -128,6 +138,13 @@
           <p>This UI is designed to mimic Chatbot UI. Log in, save your personal Gemini API Key, connect a public Google Drive folder, and analyze files like PDFs and images using tool calling.</p>
           <div class="welcome-actions" id="welcomeActions">
             <button id="btnWelcomeNewChat" class="btn btn-primary">➕ Start a New Chat</button>
+          </div>
+
+          <!-- Promo Ad Telegram Bot -->
+          <div class="promo-box" style="margin-top: 20px; padding: 16px; border-radius: 12px; border: 1px dashed rgba(6, 182, 212, 0.4); background: rgba(6, 182, 212, 0.05); text-align: center; width: 100%;">
+            <span style="font-size: 14px; font-weight: 700; color: var(--accent); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">⚡ Beli API Key & AI Model Murah</span>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">Butuh API Key premium untuk mencoba model AI compatible (seperti gpt-image-2 dll.)? Dapatkan akses instan dengan harga terjangkau melalui bot Telegram resmi kami.</p>
+            <a href="https://t.me/Wakdondinbot" target="_blank" class="btn btn-primary" style="font-size: 12px; padding: 8px 16px; display: inline-flex; height: auto; text-decoration: none; margin: 0 auto;">🤖 Hubungi Telegram @Wakdondinbot</a>
           </div>
         </div>
       </div>
@@ -166,7 +183,7 @@
         <p class="modal-desc">Paste the link of any public Google Drive folder to connect it to this chat conversation.</p>
         <div class="input-group">
           <label for="modalFolderUrl">Public Google Drive Folder URL</label>
-          <input type="text" id="modalFolderUrl" placeholder="https://drive.google.com/drive/folders/..." value="https://drive.google.com/drive/folders/1IzDKm2htqgfw_uOeg5k3ihMOgoMnnT2a" />
+          <input type="text" id="modalFolderUrl" placeholder="https://drive.google.com/drive/folders/..." value="https://drive.google.com/drive/folders/19vEaysmoDM7bQ4-snYpjUgmlqiJZwEB6?usp=sharing" />
         </div>
         <div class="modal-options">
           <label class="checkbox-label">
@@ -195,6 +212,12 @@
       <div class="modal-body">
         <p class="modal-desc">Configure your AI providers (Google Gemini or OpenAI Compatible endpoints) to start chatting with your files.</p>
         
+        <!-- Telegram Bot Marketing Ad -->
+        <div style="padding: 10px 12px; border-radius: 8px; background-color: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.18); margin-bottom: 12px; font-size: 12px; line-height: 1.45; color: var(--warning);">
+          🔑 <strong>Belum punya API Key?</strong> Dapatkan API Key Gemini atau model AI Compatible termurah (seperti gpt-image-2 dll) secara instan di Telegram Bot resmi kami: 
+          <a href="https://t.me/Wakdondinbot" target="_blank" style="color: var(--accent); font-weight: 700; text-decoration: underline;">@Wakdondinbot</a>
+        </div>
+
         <div class="input-group">
           <label for="providerSelect">AI Provider</label>
           <select id="providerSelect" class="model-dropdown" style="width: 100%; margin-top: 2px;">
@@ -230,6 +253,18 @@
         </button>
         <button id="btnSaveKey" class="btn btn-primary" disabled>Save Config</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Sidebar Mobile Backdrop Overlay -->
+  <div id="sidebarBackdrop" class="sidebar-backdrop hidden"></div>
+
+  <!-- Image Lightbox Modal -->
+  <div id="lightboxOverlay" class="modal-overlay hidden" style="z-index: 1000; background-color: rgba(0, 0, 0, 0.85);">
+    <div style="position: relative; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center;">
+      <button id="btnExitLightbox" style="position: absolute; top: -45px; right: 0; background: transparent; border: none; color: #fff; font-size: 32px; cursor: pointer; line-height: 1;">&times;</button>
+      <img id="lightboxImage" src="" alt="Zoomed View" style="max-width: 90vw; max-height: 80vh; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1); object-fit: contain;">
+      <a id="btnDownloadLightbox" href="" download class="btn btn-secondary" style="margin-top: 15px; padding: 6px 12px; font-size: 12px; height: auto;">⬇️ Download Original Image</a>
     </div>
   </div>
 

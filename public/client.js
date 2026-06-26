@@ -64,6 +64,15 @@ const elFileCountBadge = document.getElementById('fileCountBadge');
 const elExplorerContent = document.getElementById('explorerContent');
 const elToast = document.getElementById('toast');
 
+// Sidebar toggle & Lightbox selectors
+const elBtnToggleSidebar = document.getElementById('btnToggleSidebar');
+const elSidebarPanel = document.getElementById('sidebarPanel');
+const elSidebarBackdrop = document.getElementById('sidebarBackdrop');
+const elLightboxOverlay = document.getElementById('lightboxOverlay');
+const elLightboxImage = document.getElementById('lightboxImage');
+const elBtnExitLightbox = document.getElementById('btnExitLightbox');
+const elBtnDownloadLightbox = document.getElementById('btnDownloadLightbox');
+
 // Initialize
 window.addEventListener('DOMContentLoaded', () => {
   // Authentication Guard: Redirect to login if token is missing
@@ -164,6 +173,55 @@ window.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       elChatForm.requestSubmit();
+    }
+  });
+
+  // Mobile Sidebar Toggle event listeners
+  if (elBtnToggleSidebar) {
+    elBtnToggleSidebar.addEventListener('click', () => {
+      elSidebarPanel.classList.toggle('active');
+      elSidebarBackdrop.classList.toggle('hidden');
+    });
+  }
+
+  if (elSidebarBackdrop) {
+    elSidebarBackdrop.addEventListener('click', () => {
+      elSidebarPanel.classList.remove('active');
+      elSidebarBackdrop.classList.add('hidden');
+    });
+  }
+
+  // Lightbox event listeners
+  elChatHistory.addEventListener('click', (e) => {
+    const target = e.target;
+    if (target.tagName === 'IMG' && target.classList.contains('chat-generated-image')) {
+      const src = target.getAttribute('src');
+      if (src) {
+        elLightboxImage.src = src;
+        elBtnDownloadLightbox.href = src;
+        elLightboxOverlay.classList.remove('hidden');
+      }
+    }
+  });
+
+  const closeLightbox = () => {
+    elLightboxOverlay.classList.add('hidden');
+    elLightboxImage.src = '';
+    elBtnDownloadLightbox.href = '';
+  };
+
+  if (elBtnExitLightbox) elBtnExitLightbox.addEventListener('click', closeLightbox);
+  if (elLightboxOverlay) {
+    elLightboxOverlay.addEventListener('click', (e) => {
+      if (e.target === elLightboxOverlay) {
+        closeLightbox();
+      }
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && elLightboxOverlay && !elLightboxOverlay.classList.contains('hidden')) {
+      closeLightbox();
     }
   });
 });
@@ -557,8 +615,16 @@ async function saveModelPreferenceSilently(model) {
   }
 }
 
+function closeSidebarOnMobile() {
+  if (window.innerWidth <= 768 && elSidebarPanel) {
+    elSidebarPanel.classList.remove('active');
+    if (elSidebarBackdrop) elSidebarBackdrop.classList.add('hidden');
+  }
+}
+
 // Tab Swapper
 function switchTab(tab) {
+  closeSidebarOnMobile();
   state.activeTab = tab;
   if (tab === 'chats') {
     elTabChats.classList.add('active');
@@ -792,6 +858,7 @@ async function handleDeleteConversation(id) {
 }
 
 async function selectConversation(id) {
+  closeSidebarOnMobile();
   state.activeConversationId = id;
   localStorage.setItem('pd_active_conversation_id', id);
   const convo = state.conversations.find(c => c.id === id);
@@ -997,6 +1064,27 @@ function renderFolderTree(items, rootId) {
       row.className = `tree-row ${child.isFolder ? 'tree-folder' : 'tree-file'}`;
       row.dataset.id = child.id;
 
+      // Add collapse/expand chevron indicator
+      let chevron = null;
+      if (child.isFolder) {
+        chevron = document.createElement('span');
+        chevron.className = 'tree-chevron';
+        chevron.innerHTML = '▶'; // Collapsed by default
+        chevron.style.cursor = 'pointer';
+        chevron.style.display = 'inline-block';
+        chevron.style.width = '12px';
+        chevron.style.marginRight = '4px';
+        chevron.style.fontSize = '9px';
+        chevron.style.color = 'var(--text-dim)';
+        row.appendChild(chevron);
+      } else {
+        const spacer = document.createElement('span');
+        spacer.style.display = 'inline-block';
+        spacer.style.width = '12px';
+        spacer.style.marginRight = '4px';
+        row.appendChild(spacer);
+      }
+
       const icon = document.createElement('span');
       icon.className = 'tree-icon';
       icon.textContent = child.isFolder ? '📁' : getFileIcon(child.mimeType);
@@ -1017,15 +1105,26 @@ function renderFolderTree(items, rootId) {
 
       node.appendChild(row);
 
+      let childTree = null;
       if (child.isFolder) {
-        const childTree = buildTree(child.id);
+        childTree = buildTree(child.id);
         if (childTree) {
+          childTree.classList.add('hidden'); // Collapsed by default
           node.appendChild(childTree);
         }
       }
 
       row.addEventListener('click', (e) => {
         e.stopPropagation();
+        
+        // Toggle collapse/expand of sub-folders
+        if (child.isFolder && childTree) {
+          const isHidden = childTree.classList.toggle('hidden');
+          if (chevron) {
+            chevron.innerHTML = isHidden ? '▶' : '▼';
+          }
+        }
+
         document.querySelectorAll('.tree-row').forEach(r => r.classList.remove('selected'));
         row.classList.add('selected');
         showFileDetailsToast(child);
