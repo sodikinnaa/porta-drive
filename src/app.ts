@@ -40,6 +40,9 @@ export function createApp() {
     }
   });
 
+  // Favicon fallback
+  app.get("/favicon.ico", (c) => c.body(null, 204));
+
   // Static files serving
   app.get("/", serveStatic({ path: "./public/index.html" }));
   app.get("/app", serveStatic({ path: "./public/app.html" }));
