@@ -2,7 +2,7 @@ window.addEventListener('DOMContentLoaded', () => {
   // Redirect if already logged in
   const token = localStorage.getItem('pd_token');
   if (token) {
-    window.location.href = '/';
+    window.location.href = '/app';
     return;
   }
 
@@ -42,7 +42,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
       showToast('Login successful! Redirecting...', 'success');
       setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = '/app';
       }, 1000);
 
     } catch (err) {

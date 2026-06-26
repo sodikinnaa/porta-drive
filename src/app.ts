@@ -21,6 +21,7 @@ export function createApp() {
 
   // Static files serving
   app.get("/", serveStatic({ path: "./public/index.html" }));
+  app.get("/app", serveStatic({ path: "./public/app.html" }));
   app.get("/login", serveStatic({ path: "./public/login.html" }));
   app.get("/register", serveStatic({ path: "./public/register.html" }));
   app.use("/*", serveStatic({ root: "./public" }));

@@ -3,240 +3,430 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PortaDrive AI - Chatbot UI for Google Drive</title>
-  <!-- Google Fonts: Outfit and Inter -->
+  <title>PortaDrive - AI-Powered Google Drive Explorer & Analyzer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- CSS Styling -->
-  <link rel="stylesheet" href="index.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #090b11;
+      --bg-card: rgba(17, 22, 37, 0.65);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(255, 255, 255, 0.15);
+      --text: #f3f4f6;
+      --text-muted: #8c9bb0;
+      --primary: #4f46e5;
+      --primary-hover: #6366f1;
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.15);
+      --font-title: 'Plus Jakarta Sans', sans-serif;
+      --font-body: 'Outfit', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Header Nav */
+    header {
+      padding: 24px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      font-size: 28px;
+      animation: pulse 3s infinite ease-in-out;
+    }
+
+    .logo-text {
+      font-family: var(--font-title);
+      font-weight: 800;
+      font-size: 24px;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #fff 40%, var(--text-muted) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 16px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      font-family: var(--font-body);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--border-hover);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(79, 70, 229, 0.45);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 80px 0 60px 0;
+      text-align: center;
+    }
+
+    .badge-promo {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      background: rgba(79, 70, 229, 0.1);
+      border: 1px solid rgba(79, 70, 229, 0.2);
+      color: #a5b4fc;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      animation: float 4s infinite ease-in-out;
+    }
+
+    h1 {
+      font-family: var(--font-title);
+      font-size: 54px;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -1.5px;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto 40px auto;
+    }
+
+    .hero-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 60px;
+    }
+
+    /* Installer Section */
+    .installer-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      backdrop-filter: blur(16px);
+      max-width: 750px;
+      margin: 0 auto 80px auto;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+
+    .installer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .installer-title {
+      font-family: var(--font-title);
+      font-weight: 700;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .installer-command-wrapper {
+      background: #05060b;
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 8px;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 14px;
+      color: #38bdf8;
+    }
+
+    .command-text {
+      user-select: all;
+      overflow-x: auto;
+      white-space: nowrap;
+      margin-right: 16px;
+    }
+
+    .btn-copy {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-copy:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    .installer-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 12px;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Features Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-bottom: 80px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      transition: all 0.3s ease;
+      text-align: left;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-hover);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    }
+
+    .feature-icon {
+      font-size: 32px;
+      margin-bottom: 16px;
+      display: inline-block;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+    }
+
+    .feature-title {
+      font-family: var(--font-title);
+      font-weight: 700;
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    .feature-desc {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 0;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    /* Animations */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.08); opacity: 1; }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 38px; }
+      .hero { padding: 50px 0; }
+      .installer-container { padding: 20px; }
+    }
+  </style>
 </head>
 <body>
 
-  <!-- Background decorative glows -->
-  <div class="bg-glow glow-1"></div>
-  <div class="bg-glow glow-2"></div>
+  <div class="container">
+    <!-- Navigation -->
+    <header>
+      <div class="logo-container">
+        <span class="logo-icon">📁</span>
+        <span class="logo-text">PortaDrive</span>
+      </div>
+      <div class="nav-actions">
+        <a href="/login" class="btn btn-secondary">Log In</a>
+        <a href="/app" class="btn btn-primary">Launch App</a>
+      </div>
+    </header>
 
-  <div class="app-container">
-    
-    <!-- Left Sidebar (Chat History / File Explorer) -->
-    <aside class="sidebar" id="sidebarPanel">
-      <div class="sidebar-header">
-        <div class="logo">
-          <span class="logo-icon">🍀</span>
-          <h2>PortaDrive <span class="accent-text">AI</span></h2>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="badge-promo">⚡ Now with Clean Architecture & Hono Server</div>
+      <h1>Explore & Analyze Your Google Drive with AI</h1>
+      <p class="subtitle">
+        Connect public Google Drive folders, read documents locally (such as PDF and files), and chat using Gemini or Custom OpenAI Compatible providers.
+      </p>
+
+      <div class="hero-buttons">
+        <a href="/app" class="btn btn-primary" style="padding: 14px 28px; font-size: 16px;">Launch PortaDrive App 🚀</a>
+        <a href="#install" class="btn btn-secondary" style="padding: 14px 28px; font-size: 16px;">Get Installer Script</a>
+      </div>
+    </section>
+
+    <!-- Installer Section -->
+    <section id="install" class="installer-container">
+      <div class="installer-header">
+        <div class="installer-title">
+          <span>💻</span> One-Click Unix / Linux Installer
         </div>
-        <p class="sidebar-subtitle">Based on Chatbot UI design pattern</p>
+        <span style="font-size: 12px; color: var(--accent); background: var(--accent-glow); padding: 4px 10px; border-radius: 4px; font-weight: 600;">Latest Release</span>
       </div>
 
-      <!-- App Controls Section: Authenticated Users Only -->
-      <div class="app-controls-container" id="appControlsContainer">
-        <!-- New Chat and Connect Drive Buttons -->
-        <div class="sidebar-actions">
-          <button id="btnNewChat" class="btn btn-primary btn-half">
-            <span>➕ New Chat</span>
-          </button>
-          <button id="btnConnectDrive" class="btn btn-secondary btn-half">
-            <span>📁 Connect Drive</span>
-          </button>
-        </div>
-
-        <!-- Sidebar Navigation Tabs -->
-        <div class="sidebar-tabs">
-          <button class="tab-btn active" id="tabChats">Chats</button>
-          <button class="tab-btn" id="tabFiles">Files</button>
-        </div>
-
-        <!-- Tab Content: Chats List -->
-        <div class="tab-content" id="chatsTabContent">
-          <div class="conversation-list" id="conversationList">
-            <!-- Dynamically populated / Skeleton loader shown when fetching -->
-          </div>
-        </div>
-
-        <!-- Tab Content: Files Explorer (Hidden by default) -->
-        <div class="tab-content hidden" id="filesTabContent">
-          <div class="explorer-card">
-            <div class="explorer-header">
-              <h3>📂 File Explorer</h3>
-              <span class="file-count badge hidden" id="fileCountBadge">0 files</span>
-            </div>
-            <div class="explorer-content" id="explorerContent">
-              <div class="empty-state">
-                <p>Scan a Google Drive folder to view files.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Bottom Profile/Settings Panel -->
-        <div class="sidebar-footer">
-          <!-- User Profile info -->
-          <div class="profile-card">
-            <div class="profile-info">
-              <div class="profile-avatar" id="userAvatar">U</div>
-              <span class="profile-name" id="profileName">User</span>
-            </div>
-            <div class="profile-actions">
-              <button id="btnOpenSettings" class="btn-settings" title="Settings">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="3"></circle>
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                </svg>
-              </button>
-              <button id="btnLogout" class="btn-logout" title="Log Out">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                  <polyline points="16 17 21 12 16 7"></polyline>
-                  <line x1="21" y1="12" x2="9" y2="12"></line>
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Main Chat Window -->
-    <main class="chat-container">
-      
-      <!-- Chat Header -->
-      <header class="chat-header">
-        <div class="chat-title-info">
-          <h1 id="activeFolderName">Welcome to PortaDrive</h1>
-          <p id="activeFolderStatus">Select or create a conversation to start</p>
-        </div>
-        
-        <div class="header-controls">
-          <!-- Model Selector -->
-          <div class="model-selector-group">
-            <label for="modelSelect">Model:</label>
-            <select id="modelSelect" class="model-dropdown">
-              <option value="" disabled selected>Select provider...</option>
-            </select>
-          </div>
-          <span class="badge status-badge offline" id="connectionStatus">Disconnected</span>
-        </div>
-      </header>
-
-      <!-- Chat History Area -->
-      <div class="chat-history" id="chatHistory">
-        <!-- Welcome prompt when no conversation is active -->
-        <div class="welcome-message" id="welcomeMessage">
-          <div class="welcome-icon">💬</div>
-          <h2>Interact with Google Drive</h2>
-          <p>This UI is designed to mimic Chatbot UI. Log in, save your personal Gemini API Key, connect a public Google Drive folder, and analyze files like PDFs and images using tool calling.</p>
-          <div class="welcome-actions" id="welcomeActions">
-            <button id="btnWelcomeNewChat" class="btn btn-primary">➕ Start a New Chat</button>
-          </div>
-        </div>
+      <div class="installer-command-wrapper">
+        <span id="cmdText" class="command-text">curl -fsSL https://raw.githubusercontent.com/sodikinnaa/porta-drive/main/install.sh | bash</span>
+        <button onclick="copyCommand()" id="copyBtn" class="btn-copy">Copy</button>
       </div>
 
-      <!-- Tool Execution Status Banner -->
-      <div class="tool-call-banner hidden" id="toolCallBanner">
-        <div class="pulse-icon"></div>
-        <span id="toolCallText">AI is fetching folder structure...</span>
+      <div class="installer-note">
+        <span>⚙️</span> The script automatically detects your OS architecture (Linux/macOS), installs the binary, and checks dependencies like pdftotext.
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">🔍</span>
+        <h3 class="feature-title">Drive Scanner</h3>
+        <p class="feature-desc">Scan public Google Drive folders recursively or non-recursively. View entire file structures natively directly inside the browser explorer.</p>
       </div>
 
-      <!-- Chat Input Footer -->
-      <footer class="chat-footer">
-        <form id="chatForm" class="chat-input-form">
-          <textarea id="chatInput" placeholder="Write a message..." rows="1" disabled></textarea>
-          <button type="submit" id="btnSend" class="btn btn-icon" disabled>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13"></line>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-            </svg>
-          </button>
-        </form>
-      </footer>
+      <div class="feature-card">
+        <span class="feature-icon">📕</span>
+        <h3 class="feature-title">Local PDF Extraction</h3>
+        <p class="feature-desc">Reads and extracts PDF files locally using fast pdftotext utilities, falling back to Vision Multimodal API if the file contains images.</p>
+      </div>
 
-    </main>
+      <div class="feature-card">
+        <span class="feature-icon">💡</span>
+        <h3 class="feature-title">Dual AI Providers</h3>
+        <p class="feature-desc">Use Google Gemini API or customize with any OpenAI Compatible Endpoint. Fetch available models dynamically in one click.</p>
+      </div>
 
+      <div class="feature-card">
+        <span class="feature-icon">🎨</span>
+        <h3 class="feature-title">Image Generation</h3>
+        <p class="feature-desc">Exposes image generation capabilities directly through AI completions if the selected provider supports drawing or generation.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">📦</span>
+        <h3 class="feature-title">Standalone Binary</h3>
+        <p class="feature-desc">Compile the entire Hono web application into a single executable file (~98MB) with Zero external dependencies.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">🛡️</span>
+        <h3 class="feature-title">Clean Architecture</h3>
+        <p class="feature-desc">Engineered with Clean Architecture patterns, separating Core Domain, Use cases, Adapters, and UI Controllers.</p>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <p>&copy; 2026 PortaDrive Workspace. Authorized for sodikinnaa.</p>
+    </footer>
   </div>
 
-  <!-- Google Drive Connection Modal -->
-  <div class="modal-overlay hidden" id="driveModal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h2>📁 Connect Google Drive Folder</h2>
-        <button class="btn-close" id="btnCloseModal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <p class="modal-desc">Paste the link of any public Google Drive folder to connect it to this chat conversation.</p>
-        <div class="input-group">
-          <label for="modalFolderUrl">Public Google Drive Folder URL</label>
-          <input type="text" id="modalFolderUrl" placeholder="https://drive.google.com/drive/folders/..." value="https://drive.google.com/drive/folders/1IzDKm2htqgfw_uOeg5k3ihMOgoMnnT2a" />
-        </div>
-        <div class="modal-options">
-          <label class="checkbox-label">
-            <input type="checkbox" id="modalRecursive" checked />
-            Scan folders recursively (include nested directories)
-          </label>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" id="btnCancelModal">Cancel</button>
-        <button class="btn btn-primary" id="btnConfirmScan">
-          <span class="btn-text">Scan & Connect</span>
-          <span class="spinner hidden"></span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Settings Configuration Modal -->
-  <div class="modal-overlay hidden" id="settingsModal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h2>⚙️ API Configurations</h2>
-        <button class="btn-close" id="btnCloseSettingsModal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <p class="modal-desc">Configure your AI providers (Google Gemini or OpenAI Compatible endpoints) to start chatting with your files.</p>
-        
-        <div class="input-group">
-          <label for="providerSelect">AI Provider</label>
-          <select id="providerSelect" class="model-dropdown" style="width: 100%; margin-top: 2px;">
-            <option value="gemini" selected>Google Gemini</option>
-            <option value="openai_compatible">OpenAI Compatible</option>
-          </select>
-        </div>
-
-        <!-- Gemini Config Inputs -->
-        <div id="geminiConfigGroup" class="config-inputs-group" style="margin-top: 12px;">
-          <div class="input-group">
-            <label for="geminiApiKey">Gemini API Key</label>
-            <input type="password" id="geminiApiKey" placeholder="Enter Gemini Key" style="width: 100%;" />
-          </div>
-        </div>
-
-        <!-- OpenAI Compatible Config Inputs -->
-        <div id="openaiConfigGroup" class="config-inputs-group hidden" style="margin-top: 12px;">
-          <div class="input-group">
-            <label for="openaiBaseUrl">Base URL</label>
-            <input type="text" id="openaiBaseUrl" placeholder="https://api.openai.com/v1" style="width: 100%;" />
-          </div>
-          <div class="input-group" style="margin-top: 8px;">
-            <label for="openaiApiKey">API Key</label>
-            <input type="password" id="openaiApiKey" placeholder="API Key" style="width: 100%;" />
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button id="btnTestConfig" class="btn btn-secondary">
-          <span class="btn-text">Test Connection</span>
-          <span class="spinner hidden" id="testSpinner" style="width: 12px; height: 12px; margin-left: 6px;"></span>
-        </button>
-        <button id="btnSaveKey" class="btn btn-primary" disabled>Save Config</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toast Notification System -->
-  <div id="toast" class="toast hidden"></div>
-
-  <!-- Client-side Logic -->
-  <script src="client.js"></script>
+  <script>
+    function copyCommand() {
+      const text = document.getElementById('cmdText').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const copyBtn = document.getElementById('copyBtn');
+        copyBtn.textContent = 'Copied!';
+        copyBtn.style.color = '#10b981';
+        copyBtn.style.borderColor = '#10b981';
+        setTimeout(() => {
+          copyBtn.textContent = 'Copy';
+          copyBtn.style.color = 'var(--text)';
+          copyBtn.style.borderColor = 'rgba(255,255,255,0.1)';
+        }, 2000);
+      });
+    }
+  </script>
 </body>
 </html>

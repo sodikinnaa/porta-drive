@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PortaDrive AI - Chatbot UI for Google Drive</title>
+  <!-- Google Fonts: Outfit and Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- CSS Styling -->
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+  <!-- Background decorative glows -->
+  <div class="bg-glow glow-1"></div>
+  <div class="bg-glow glow-2"></div>
+
+  <div class="app-container">
+    
+    <!-- Left Sidebar (Chat History / File Explorer) -->
+    <aside class="sidebar" id="sidebarPanel">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon">🍀</span>
+          <h2>PortaDrive <span class="accent-text">AI</span></h2>
+        </div>
+        <p class="sidebar-subtitle">Based on Chatbot UI design pattern</p>
+      </div>
+
+      <!-- App Controls Section: Authenticated Users Only -->
+      <div class="app-controls-container" id="appControlsContainer">
+        <!-- New Chat and Connect Drive Buttons -->
+        <div class="sidebar-actions">
+          <button id="btnNewChat" class="btn btn-primary btn-half">
+            <span>➕ New Chat</span>
+          </button>
+          <button id="btnConnectDrive" class="btn btn-secondary btn-half">
+            <span>📁 Connect Drive</span>
+          </button>
+        </div>
+
+        <!-- Sidebar Navigation Tabs -->
+        <div class="sidebar-tabs">
+          <button class="tab-btn active" id="tabChats">Chats</button>
+          <button class="tab-btn" id="tabFiles">Files</button>
+        </div>
+
+        <!-- Tab Content: Chats List -->
+        <div class="tab-content" id="chatsTabContent">
+          <div class="conversation-list" id="conversationList">
+            <!-- Dynamically populated / Skeleton loader shown when fetching -->
+          </div>
+        </div>
+
+        <!-- Tab Content: Files Explorer (Hidden by default) -->
+        <div class="tab-content hidden" id="filesTabContent">
+          <div class="explorer-card">
+            <div class="explorer-header">
+              <h3>📂 File Explorer</h3>
+              <span class="file-count badge hidden" id="fileCountBadge">0 files</span>
+            </div>
+            <div class="explorer-content" id="explorerContent">
+              <div class="empty-state">
+                <p>Scan a Google Drive folder to view files.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Profile/Settings Panel -->
+        <div class="sidebar-footer">
+          <!-- User Profile info -->
+          <div class="profile-card">
+            <div class="profile-info">
+              <div class="profile-avatar" id="userAvatar">U</div>
+              <span class="profile-name" id="profileName">User</span>
+            </div>
+            <div class="profile-actions">
+              <button id="btnOpenSettings" class="btn-settings" title="Settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+              </button>
+              <button id="btnLogout" class="btn-logout" title="Log Out">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Chat Window -->
+    <main class="chat-container">
+      
+      <!-- Chat Header -->
+      <header class="chat-header">
+        <div class="chat-title-info">
+          <h1 id="activeFolderName">Welcome to PortaDrive</h1>
+          <p id="activeFolderStatus">Select or create a conversation to start</p>
+        </div>
+        
+        <div class="header-controls">
+          <!-- Model Selector -->
+          <div class="model-selector-group">
+            <label for="modelSelect">Model:</label>
+            <select id="modelSelect" class="model-dropdown">
+              <option value="" disabled selected>Select provider...</option>
+            </select>
+          </div>
+          <span class="badge status-badge offline" id="connectionStatus">Disconnected</span>
+        </div>
+      </header>
+
+      <!-- Chat History Area -->
+      <div class="chat-history" id="chatHistory">
+        <!-- Welcome prompt when no conversation is active -->
+        <div class="welcome-message" id="welcomeMessage">
+          <div class="welcome-icon">💬</div>
+          <h2>Interact with Google Drive</h2>
+          <p>This UI is designed to mimic Chatbot UI. Log in, save your personal Gemini API Key, connect a public Google Drive folder, and analyze files like PDFs and images using tool calling.</p>
+          <div class="welcome-actions" id="welcomeActions">
+            <button id="btnWelcomeNewChat" class="btn btn-primary">➕ Start a New Chat</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tool Execution Status Banner -->
+      <div class="tool-call-banner hidden" id="toolCallBanner">
+        <div class="pulse-icon"></div>
+        <span id="toolCallText">AI is fetching folder structure...</span>
+      </div>
+
+      <!-- Chat Input Footer -->
+      <footer class="chat-footer">
+        <form id="chatForm" class="chat-input-form">
+          <textarea id="chatInput" placeholder="Write a message..." rows="1" disabled></textarea>
+          <button type="submit" id="btnSend" class="btn btn-icon" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </form>
+      </footer>
+
+    </main>
+
+  </div>
+
+  <!-- Google Drive Connection Modal -->
+  <div class="modal-overlay hidden" id="driveModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>📁 Connect Google Drive Folder</h2>
+        <button class="btn-close" id="btnCloseModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Paste the link of any public Google Drive folder to connect it to this chat conversation.</p>
+        <div class="input-group">
+          <label for="modalFolderUrl">Public Google Drive Folder URL</label>
+          <input type="text" id="modalFolderUrl" placeholder="https://drive.google.com/drive/folders/..." value="https://drive.google.com/drive/folders/1IzDKm2htqgfw_uOeg5k3ihMOgoMnnT2a" />
+        </div>
+        <div class="modal-options">
+          <label class="checkbox-label">
+            <input type="checkbox" id="modalRecursive" checked />
+            Scan folders recursively (include nested directories)
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnCancelModal">Cancel</button>
+        <button class="btn btn-primary" id="btnConfirmScan">
+          <span class="btn-text">Scan & Connect</span>
+          <span class="spinner hidden"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Configuration Modal -->
+  <div class="modal-overlay hidden" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>⚙️ API Configurations</h2>
+        <button class="btn-close" id="btnCloseSettingsModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Configure your AI providers (Google Gemini or OpenAI Compatible endpoints) to start chatting with your files.</p>
+        
+        <div class="input-group">
+          <label for="providerSelect">AI Provider</label>
+          <select id="providerSelect" class="model-dropdown" style="width: 100%; margin-top: 2px;">
+            <option value="gemini" selected>Google Gemini</option>
+            <option value="openai_compatible">OpenAI Compatible</option>
+          </select>
+        </div>
+
+        <!-- Gemini Config Inputs -->
+        <div id="geminiConfigGroup" class="config-inputs-group" style="margin-top: 12px;">
+          <div class="input-group">
+            <label for="geminiApiKey">Gemini API Key</label>
+            <input type="password" id="geminiApiKey" placeholder="Enter Gemini Key" style="width: 100%;" />
+          </div>
+        </div>
+
+        <!-- OpenAI Compatible Config Inputs -->
+        <div id="openaiConfigGroup" class="config-inputs-group hidden" style="margin-top: 12px;">
+          <div class="input-group">
+            <label for="openaiBaseUrl">Base URL</label>
+            <input type="text" id="openaiBaseUrl" placeholder="https://api.openai.com/v1" style="width: 100%;" />
+          </div>
+          <div class="input-group" style="margin-top: 8px;">
+            <label for="openaiApiKey">API Key</label>
+            <input type="password" id="openaiApiKey" placeholder="API Key" style="width: 100%;" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnTestConfig" class="btn btn-secondary">
+          <span class="btn-text">Test Connection</span>
+          <span class="spinner hidden" id="testSpinner" style="width: 12px; height: 12px; margin-left: 6px;"></span>
+        </button>
+        <button id="btnSaveKey" class="btn btn-primary" disabled>Save Config</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification System -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Client-side Logic -->
+  <script src="client.js"></script>
+</body>
+</html>
