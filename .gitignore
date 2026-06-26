@@ -1,0 +1,6 @@
+node_modules/
+portadrive.db
+portadrive.db-journal
+drive_export_*.json
+*.log
+.DS_Store

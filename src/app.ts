@@ -1,0 +1,29 @@
+import { Hono } from "hono";
+import { logger } from "hono/logger";
+import { serveStatic } from "hono/bun";
+import { createDependencies } from "./container";
+import { createRoutings } from "./router/routing.config";
+import { setUpRoutes } from "./router/router";
+import { createAuthMiddleware } from "./middleware/auth.middleware";
+
+export function createApp() {
+  const { sessionManager, controllers } = createDependencies();
+  const routings = createRoutings(controllers);
+
+  const app = new Hono();
+  
+  // Middleware
+  app.use("*", logger());
+  app.use("/api/*", createAuthMiddleware(sessionManager));
+
+  // Set up API routes
+  setUpRoutes(app, routings);
+
+  // Static files serving
+  app.get("/", serveStatic({ path: "./public/index.html" }));
+  app.get("/login", serveStatic({ path: "./public/login.html" }));
+  app.get("/register", serveStatic({ path: "./public/register.html" }));
+  app.use("/*", serveStatic({ root: "./public" }));
+
+  return app;
+}

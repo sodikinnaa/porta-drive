@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - PortaDrive AI</title>
+  <!-- Google Fonts: Outfit and Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- CSS Styling -->
+  <link rel="stylesheet" href="index.css">
+</head>
+<body class="auth-page">
+
+  <!-- Background decorative glows -->
+  <div class="bg-glow glow-1"></div>
+  <div class="bg-glow glow-2"></div>
+
+  <div class="auth-panel-container">
+    <div class="auth-header-logo">
+      <span class="logo-icon">🍀</span>
+      <h1>PortaDrive <span class="accent-text">AI</span></h1>
+      <p>Analyze Google Drive folders with Gemini</p>
+    </div>
+
+    <div class="auth-card">
+      <h3>📝 User Registration</h3>
+      
+      <form id="registerForm" class="auth-form">
+        <div class="input-group">
+          <label for="regUsername">Username</label>
+          <input type="text" id="regUsername" required autocomplete="username" placeholder="Choose a username" />
+        </div>
+        <div class="input-group">
+          <label for="regPassword">Password</label>
+          <input type="password" id="regPassword" required autocomplete="new-password" placeholder="Choose a secure password" />
+        </div>
+        
+        <button type="submit" class="btn btn-primary" id="btnRegisterSubmit">
+          <span class="btn-text">Register Account</span>
+          <span class="spinner hidden" id="registerSpinner"></span>
+        </button>
+      </form>
+
+      <p class="auth-toggle-text">
+        Already have an account? 
+        <a href="/login">Log in here</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Register JS -->
+  <script src="register.js"></script>
+</body>
+</html>

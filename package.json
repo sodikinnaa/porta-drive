@@ -1,0 +1,19 @@
+{
+  "name": "porta-drive-detector",
+  "version": "1.0.0",
+  "description": "Detect and list files in a public Google Drive folder recursively or non-recursively without an API key using Bun.",
+  "main": "index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "dev": "bun --watch src/index.ts",
+    "cli": "bun run index.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "hono": "^4.12.27"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}

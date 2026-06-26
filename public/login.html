@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - PortaDrive AI</title>
+  <!-- Google Fonts: Outfit and Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- CSS Styling -->
+  <link rel="stylesheet" href="index.css">
+</head>
+<body class="auth-page">
+
+  <!-- Background decorative glows -->
+  <div class="bg-glow glow-1"></div>
+  <div class="bg-glow glow-2"></div>
+
+  <div class="auth-panel-container">
+    <div class="auth-header-logo">
+      <span class="logo-icon">🍀</span>
+      <h1>PortaDrive <span class="accent-text">AI</span></h1>
+      <p>Analyze Google Drive folders with Gemini</p>
+    </div>
+
+    <div class="auth-card">
+      <h3>🔑 User Login</h3>
+      
+      <form id="loginForm" class="auth-form">
+        <div class="input-group">
+          <label for="loginUsername">Username</label>
+          <input type="text" id="loginUsername" required autocomplete="username" placeholder="Enter username" />
+        </div>
+        <div class="input-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••" />
+        </div>
+        
+        <button type="submit" class="btn btn-primary" id="btnLoginSubmit">
+          <span class="btn-text">Log In</span>
+          <span class="spinner hidden" id="loginSpinner"></span>
+        </button>
+      </form>
+
+      <p class="auth-toggle-text">
+        Don't have an account? 
+        <a href="/register">Register here</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Login JS -->
+  <script src="login.js"></script>
+</body>
+</html>
